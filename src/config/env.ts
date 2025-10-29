@@ -5,6 +5,8 @@
  * It throws errors if required variables are missing.
  */
 
+import { createTable } from '../utils/table';
+
 /**
  * Validates that required environment variables are set
  */
@@ -38,6 +40,14 @@ validateEnv();
  */
 export const oauthConfig = {
   googleClientId: process.env.GOOGLE_CLIENT_ID || '',
+  googleClientSecret: process.env.GOOGLE_CLIENT_SECRET || '',
+  googleRedirectUri: process.env.GOOGLE_REDIRECT_URI || '',
+  googleScopes: process.env.GOOGLE_SCOPES || '',
+  googleTokenUri: process.env.GOOGLE_TOKEN_URI || '',
+  googleAuthUri: process.env.GOOGLE_AUTH_URI || '',
+  googleUserInfoUri: process.env.GOOGLE_USER_INFO_URI || '',
+  googleUserInfoEmail: process.env.GOOGLE_USER_INFO_EMAIL || '',
+  googleUserInfoName: process.env.GOOGLE_USER_INFO_NAME || '',
 };
 
 /**
@@ -102,18 +112,103 @@ export const securityConfig = {
   argon2Parallelism: parseInt(process.env.ARGON2_PARALLELISM || '4', 10),
 };
 
+
 /**
  * Log all configuration (hide sensitive values)
  */
 if (serverConfig.isDevelopment) {
-  console.log('📋 Environment Configuration:');
-  console.log('   Node Environment:', serverConfig.nodeEnv);
-  console.log('   Port:', serverConfig.port);
-  console.log('   MongoDB URI:', dbConfig.uri.substring(0, 20) + '...');
-  console.log('   JWT Secret:', jwtConfig.secret.length >= 32 ? '✅ Set' : '⚠️ Too short');
-  console.log('   Access Token Expiry:', jwtConfig.accessTokenExpiry);
-  console.log('   Refresh Token Expiry:', jwtConfig.refreshTokenExpiry);
-  console.log('   Google OAuth:', oauthConfig.googleClientId ? '✅ Enabled' : '⚠️ Not configured');
-  console.log('   Email Service:', emailConfig.enabled ? '✅ Enabled' : '⚠️ Not configured');
+  console.log('\nENVIRONMENT CONFIGURATION');
+
+  // App Settings
+  const appSettings = [
+    { label: 'Node Environment', value: serverConfig.nodeEnv },
+    { label: 'Port', value: serverConfig.port.toString() },
+    { label: 'MongoDB URI', value: dbConfig.uri.substring(0, 20) + '...' },
+  ];
+
+  createTable('APP SETTINGS', appSettings);
+
+  // Security Settings
+  const securitySettings = [
+    { label: 'JWT Secret', value: jwtConfig.secret.length >= 32 ? '🟢 Set' : '🔴 Too short' },
+    { label: 'Access Token Expiry', value: jwtConfig.accessTokenExpiry },
+    { label: 'Refresh Token Expiry', value: jwtConfig.refreshTokenExpiry },
+  ];
+
+  createTable('SECURITY', securitySettings);
+
+  // Services
+  const services = [
+    {
+      label: 'Google OAuth',
+      value: oauthConfig.googleClientId
+        ? `🟢 Enabled (${oauthConfig.googleClientId.substring(0, 8)}...)`
+        : '🔴 Not configured'
+    },
+    {
+      label: 'Google Client Secret',
+      value: oauthConfig.googleClientSecret
+        ? `🟢 Enabled (${oauthConfig.googleClientSecret.substring(0, 8)}...)`
+        : '🔴 Not configured'
+    },
+    {
+      label: 'Google Redirect URI',
+      value: oauthConfig.googleRedirectUri
+        ? `🟢 Enabled (${oauthConfig.googleRedirectUri})`
+        : '🔴 Not configured'
+    },
+    {
+      label: 'Google Scopes',
+      value: oauthConfig.googleScopes
+        ? `🟢 Enabled (${oauthConfig.googleScopes})`
+        : '🔴 Not configured'
+    },
+    {
+      label: 'Google Token URI',
+      value: oauthConfig.googleTokenUri
+        ? `🟢 Enabled (${oauthConfig.googleTokenUri})`
+        : '🔴 Not configured'
+    },
+    {
+      label: 'Google Auth URI',
+      value: oauthConfig.googleAuthUri
+        ? `🟢 Enabled (${oauthConfig.googleAuthUri})`
+        : '🔴 Not configured'
+    },
+    {
+      label: 'Google User Info URI',
+      value: oauthConfig.googleUserInfoUri
+        ? `🟢 Enabled (${oauthConfig.googleUserInfoUri})`
+        : '🔴 Not configured'
+    },
+    {
+      label: 'Google User Info Email',
+      value: oauthConfig.googleUserInfoEmail
+        ? `🟢 Enabled (${oauthConfig.googleUserInfoEmail})`
+        : '🔴 Not configured'
+    },
+    {
+      label: 'Google User Info Name',
+      value: oauthConfig.googleUserInfoName
+        ? `🟢 Enabled (${oauthConfig.googleUserInfoName})`
+        : '🔴 Not configured'
+    },
+    {
+      label: 'Email Service',
+      value: emailConfig.enabled
+        ? `🟢 Enabled (${emailConfig.host})`
+        : '🔴 Not configured'
+    },
+    {
+      label: 'File Storage',
+      value: `${storageConfig.provider} (${Math.round(storageConfig.maxSize / 1024 / 1024)}MB max)`
+    },
+    {
+      label: 'CORS Origins',
+      value: securityConfig.corsOrigin === '*' ? 'All origins' : `${securityConfig.corsOrigin.split(',').length} origin(s)`
+    },
+  ];
+
+  createTable('SERVICES', services);
 }
 

@@ -69,7 +69,6 @@ const DeviceSchema: Schema = new Schema(
       type: Schema.Types.ObjectId,
       ref: 'User',
       required: [true, 'User ID is required'],
-      index: true,
     },
     platform: {
       type: String,
@@ -216,7 +215,6 @@ DeviceSchema.statics.findTrustedDevices = async function (): Promise<IDevice[]> 
 
 // Create indexes
 DeviceSchema.index({ userId: 1 });
-DeviceSchema.index({ identifier: 1 }, { unique: true });
 DeviceSchema.index({ fingerprint: 1 });
 
 const Device = mongoose.model<IDevice, IDeviceModel>('Device', DeviceSchema);

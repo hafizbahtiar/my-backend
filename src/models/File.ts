@@ -38,12 +38,10 @@ const FileSchema: Schema = new Schema(
       type: Schema.Types.ObjectId,
       ref: 'User',
       required: [true, 'User ID is required'],
-      index: true,
     },
     fileName: {
       type: String,
       required: [true, 'File name is required'],
-      index: true,
     },
     originalName: {
       type: String,
@@ -57,7 +55,6 @@ const FileSchema: Schema = new Schema(
       type: String,
       required: [true, 'File category is required'],
       enum: ['image', 'document', 'video', 'other'],
-      index: true,
     },
     size: {
       type: Number,

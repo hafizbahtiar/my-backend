@@ -162,8 +162,6 @@ SessionSchema.statics.deactivateSessionByDeviceId = async function (deviceId: mo
 
 // Create indexes
 SessionSchema.index({ userId: 1 });
-SessionSchema.index({ deviceId: 1 }, { unique: true });
-SessionSchema.index({ refreshToken: 1 }, { unique: true });
 SessionSchema.index({ expiresAt: 1 }, { expireAfterSeconds: 0 }); // TTL index - auto-delete expired sessions
 SessionSchema.index({ userId: 1, isActive: 1 }); // Compound index
 

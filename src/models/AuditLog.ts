@@ -60,7 +60,6 @@ const AuditLogSchema: Schema = new Schema(
       type: Schema.Types.ObjectId,
       ref: 'User',
       required: false, // Some events may not have userId (e.g., failed login attempts before auth)
-      index: true,
     },
     action: {
       type: String,
@@ -86,18 +85,15 @@ const AuditLogSchema: Schema = new Schema(
         'login_attempt_failed',
         'unauthorized_access',
       ],
-      index: true,
     },
     status: {
       type: String,
       required: [true, 'Status is required'],
       enum: ['success', 'failure', 'warning'],
-      index: true,
     },
     ipAddress: {
       type: String,
       required: [true, 'IP address is required'],
-      index: true,
     },
     userAgent: {
       type: String,
@@ -115,7 +111,6 @@ const AuditLogSchema: Schema = new Schema(
     timestamp: {
       type: Date,
       default: Date.now,
-      index: true,
     },
   },
   {

@@ -1,4 +1,26 @@
 import mongoose from 'mongoose';
+import { createTable } from '../utils/table';
+
+/**
+ * MongoDB Connection Configuration
+ * 
+ * This file handles the connection to MongoDB using Mongoose.
+ * The connection is established when the application starts.
+ */
+
+/**
+ * Get connection state text with emoji
+ */
+function getConnectionStateText(readyState: number): string {
+  const stateMap: Record<number, string> = {
+    0: '🔴 Disconnected',
+    1: '🟢 Connected',
+    2: '🟡 Connecting',
+    3: '🟠 Disconnecting',
+    99: '⚪ Uninitialized'
+  };
+  return stateMap[readyState] || '❓ Unknown';
+}
 
 /**
  * MongoDB Connection Configuration
@@ -36,7 +58,7 @@ export async function connectDB(): Promise<void> {
       throw new Error('MONGODB_URI environment variable is not set');
     }
 
-    // Check if already connected
+    // Check if already connected (1 = connected)
     if (mongoose.connection.readyState === 1) {
       console.log('✅ MongoDB already connected');
       return;
@@ -45,9 +67,17 @@ export async function connectDB(): Promise<void> {
     // Connect to MongoDB
     await mongoose.connect(mongoUri, options);
 
-    console.log('✅ MongoDB connected successfully');
-    console.log(`   Host: ${mongoose.connection.host}`);
-    console.log(`   Database: ${mongoose.connection.name}`);
+    console.log('\n🎉 MongoDB connected successfully!');
+    
+    // Create dynamic database status table
+    const dbInfo = [
+      { label: 'Host', value: mongoose.connection.host || 'Unknown' },
+      { label: 'Database', value: mongoose.connection.name || 'Unknown' },
+      { label: 'Port', value: mongoose.connection.port?.toString() || 'Unknown' },
+      { label: 'State', value: getConnectionStateText(mongoose.connection.readyState) },
+    ];
+    
+    createTable('DATABASE STATUS', dbInfo);
 
     // Handle connection events
     setupConnectionHandlers();
@@ -136,12 +166,13 @@ export function getConnectionStatus(): {
   readyState: number;
   readyStateText: string;
 } {
-  const readyStates = [
-    'disconnected',
-    'connected',
-    'connecting',
-    'disconnecting',
-  ];
+  const readyStates: Record<number, string> = {
+    0: 'disconnected',
+    1: 'connected',
+    2: 'connecting',
+    3: 'disconnecting',
+    99: 'uninitialized',
+  };
 
   const readyState = mongoose.connection.readyState;
 

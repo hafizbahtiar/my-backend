@@ -105,7 +105,6 @@ UserSchema.statics.searchByFullName = async function (query: string): Promise<IU
 };
 
 // Create indexes
-UserSchema.index({ username: 1 }, { unique: true });
 UserSchema.index({ fullName: 'text' }); // Full-text search index
 
 const User = mongoose.model<IUser, IUserModel>('User', UserSchema);

@@ -319,8 +319,6 @@ AccountSchema.statics.isEmailAvailable = async function (email: string): Promise
 };
 
 // Create indexes
-AccountSchema.index({ userId: 1 }, { unique: true });
-AccountSchema.index({ email: 1 }, { unique: true });
 AccountSchema.index({ isActive: 1 });
 
 const Account = mongoose.model<IAccount, IAccountModel>('Account', AccountSchema);
