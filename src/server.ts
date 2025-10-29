@@ -1,7 +1,7 @@
 import { Hono } from 'hono'
 import { cors } from 'hono/cors'
 import { secureHeaders } from 'hono/secure-headers'
-import { compress } from 'hono/compress'
+// import { compress } from 'hono/compress' // Disabled for Bun compatibility
 import { logger } from 'hono/logger'
 import { prettyJSON } from 'hono/pretty-json'
 import connectDB from './config/database'
@@ -36,8 +36,8 @@ app.use('*', cors({
 // Use Hono's built-in security headers
 app.use('*', secureHeaders())
 
-// OPTIMIZATION: Add compression for JSON responses
-app.use('*', compress())
+// OPTIMIZATION: Compression disabled for Bun compatibility
+// app.use('*', compress()) // CompressionStream not supported in Bun yet
 
 // OPTIMIZATION: Pretty JSON in development (makes debugging easier)
 if (serverConfig.nodeEnv === 'development') {
