@@ -1,0 +1,48 @@
+# Static File Serving Test
+
+This is a test file to verify that static file serving is working correctly.
+
+You can access this file at: `/uploads/test.txt`
+
+## Features Implemented:
+
+1. **Static File Serving** ✅
+   - Files served from `/uploads/*` path
+   - Security headers applied
+   - Cache control for different file types
+
+2. **Security Features** ✅
+   - Path traversal protection
+   - Content-Type validation
+   - X-Content-Type-Options: nosniff
+   - X-Frame-Options: DENY
+
+3. **Caching Strategy** ✅
+   - Images: 1 day cache
+   - Documents: No cache (download)
+   - Other files: 1 hour cache
+
+4. **File Type Support** ✅
+   - Images: jpg, jpeg, png, gif, webp
+   - Documents: pdf, doc, docx, txt
+   - Videos: mp4, webm, ogg
+
+## Usage:
+
+```bash
+# Upload a file via API
+curl -X POST http://localhost:7000/api/user/avatar \
+  -H "Authorization: Bearer YOUR_TOKEN" \
+  -F "avatar=@image.jpg"
+
+# Access the uploaded file
+curl http://localhost:7000/uploads/avatar-123.jpg
+```
+
+## File URLs:
+
+When you upload a file, the API returns a URL like:
+- `/uploads/avatar-1234567890.jpg`
+- `/uploads/document-1234567890.pdf`
+
+These URLs are now accessible via the static file serving middleware.
