@@ -112,6 +112,14 @@ export const securityConfig = {
   argon2Parallelism: parseInt(process.env.ARGON2_PARALLELISM || '4', 10),
 };
 
+/**
+ * Redis configuration (optional)
+ */
+export const redisConfig = {
+  url: process.env.REDIS_URL || '',
+  enabled: !!process.env.REDIS_URL,
+};
+
 
 /**
  * Log all configuration (hide sensitive values)
@@ -206,6 +214,10 @@ if (serverConfig.isDevelopment) {
     {
       label: 'CORS Origins',
       value: securityConfig.corsOrigin === '*' ? 'All origins' : `${securityConfig.corsOrigin.split(',').length} origin(s)`
+    },
+    {
+      label: 'Redis',
+      value: redisConfig.enabled ? `🟢 Enabled` : '🔴 Not configured',
     },
   ];
 

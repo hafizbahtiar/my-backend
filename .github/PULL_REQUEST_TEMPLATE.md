@@ -12,6 +12,8 @@
 - [ ] Documentation update
 - [ ] Performance improvement
 - [ ] Refactoring (no functional changes)
+- [ ] Security/Auth change (tokens, rate limits, API keys)
+- [ ] Ops/Infra change (PM2, Agenda, Redis, Sentry)
 
 ## Testing
 
@@ -20,6 +22,7 @@
 - [ ] Unit tests
 - [ ] Integration tests
 - [ ] Manual testing
+- [ ] Load tests (k6) impacted
 
 ## Checklist
 
@@ -28,11 +31,16 @@
 - [ ] Code follows the project's style guidelines
 - [ ] Self-review completed
 - [ ] Code is commented where necessary
-- [ ] Documentation updated
+- [ ] Documentation updated (README, doc/*)
+- [ ] OpenAPI updated (`/openapi.json` via src/docs/openapi.ts)
 - [ ] No new warnings generated
 - [ ] Tests added/updated
 - [ ] All tests passing
 - [ ] Breaking changes documented (if applicable)
+- [ ] Environment variables documented (env guide) if added/changed
+- [ ] Rate limits and security implications reviewed
+- [ ] Affects PM2/worker? update `ecosystem.config.js` if needed
+- [ ] Observability updated (logs fields, Sentry capture)
 
 ## Related Issues
 

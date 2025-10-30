@@ -6,4 +6,5 @@ export * from './google-oauth.service';
 export * from './email.service';
 export * from './address.service';
 export * from './audit.service';
+export * from './cron.service';
 

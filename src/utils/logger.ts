@@ -26,15 +26,21 @@ function formatTimestamp(): string {
   return new Date().toISOString();
 }
 
-function formatMessage(level: string, message: string, data?: any): string {
-  const timestamp = formatTimestamp();
-  const prefix = `[${timestamp}] [${level.toUpperCase()}]`;
-  
-  if (data) {
-    return `${prefix} ${message}\n${JSON.stringify(data, null, 2)}`;
+function writeJson(level: string, message: string, data?: Record<string, unknown> | unknown): void {
+  const payload: Record<string, unknown> = {
+    ts: formatTimestamp(),
+    level: level.toLowerCase(),
+    message,
+  };
+
+  if (data && typeof data === 'object') {
+    Object.assign(payload, data as Record<string, unknown>);
+  } else if (data !== undefined) {
+    payload.data = data as unknown;
   }
-  
-  return `${prefix} ${message}`;
+
+  // One-line JSON for log aggregators
+  console.log(JSON.stringify(payload));
 }
 
 function shouldLog(level: LogLevel): boolean {
@@ -44,19 +50,19 @@ function shouldLog(level: LogLevel): boolean {
 export const logger = {
   debug(message: string, data?: any): void {
     if (shouldLog(LogLevel.DEBUG)) {
-      console.log(formatMessage('debug', message, data));
+      writeJson('debug', message, data);
     }
   },
 
   info(message: string, data?: any): void {
     if (shouldLog(LogLevel.INFO)) {
-      console.log(formatMessage('info', message, data));
+      writeJson('info', message, data);
     }
   },
 
   warn(message: string, data?: any): void {
     if (shouldLog(LogLevel.WARN)) {
-      console.warn(formatMessage('warn', message, data));
+      writeJson('warn', message, data);
     }
   },
 
@@ -69,7 +75,7 @@ export const logger = {
             stack: error.stack,
           }
         : error;
-      console.error(formatMessage('error', message, errorData));
+      writeJson('error', message, errorData);
     }
   },
 };

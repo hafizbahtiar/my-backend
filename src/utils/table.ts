@@ -25,7 +25,7 @@ export interface TableData {
  * createTable('SERVER INFO', data);
  * ```
  */
-export function createTable(title: string, data: TableData[], minWidth: number = 70): void {
+export function createTable(title: string, data: TableData[], minWidth: number = 100): void {
   // Calculate dynamic width based on content
   const maxLabelLength = Math.max(...data.map(item => item.label.length));
   const maxValueLength = Math.max(...data.map(item => item.value.length));
@@ -72,7 +72,7 @@ export function createTable(title: string, data: TableData[], minWidth: number =
  * createBanner('🚀 SERVER STARTED SUCCESSFULLY!');
  * ```
  */
-export function createBanner(text: string, width: number = 70): void {
+export function createBanner(text: string, width: number = 100): void {
   const horizontalLine = '═'.repeat(width - 2);
   const topBorder = `╔${horizontalLine}╗`;
   const bottomBorder = `╚${horizontalLine}╝`;

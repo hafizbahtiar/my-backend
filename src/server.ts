@@ -10,12 +10,16 @@ import routes from './routes'
 import { requestMonitoring, healthCheck, serveUploadedFiles } from './middleware'
 import { logger as customLogger } from './utils/logger'
 import { createTable, createBanner } from './utils/table'
+import { initSentry, captureError, flushSentry } from './config/sentry'
 
 // Beautiful startup banner
 const showBanner = () => {
   createBanner('🚀 TEMPLATE BACKEND API - HONO + BUN + MONGODB 🚀');
   console.log('    Starting server in development mode...\n');
 };
+
+// Initialize error tracking (no-op if SENTRY_DSN missing)
+initSentry();
 
 showBanner();
 
@@ -75,6 +79,7 @@ app.route('/', routes)
 // Initialize database connection
 connectDB().catch((error: Error) => {
   customLogger.error('Failed to connect to database', error)
+  captureError(error, { where: 'connectDB' })
   process.exit(1)
 })
 
@@ -118,3 +123,16 @@ const startupMessage = () => {
 startupMessage();
 
 export default app
+
+// Global error handlers
+process.on('unhandledRejection', (reason) => {
+  customLogger.error('Unhandled Rejection', reason as any)
+  captureError(reason as any, { where: 'unhandledRejection' })
+})
+
+process.on('uncaughtException', async (err) => {
+  customLogger.error('Uncaught Exception', err)
+  captureError(err, { where: 'uncaughtException' })
+  await flushSentry().catch(() => {})
+  process.exit(1)
+})

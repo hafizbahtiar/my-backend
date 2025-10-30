@@ -30,11 +30,25 @@ assignees: ''
 - OS: [e.g. macOS 14.0]
 - Node/Bun Version: [e.g. Bun 1.0.0]
 - Application Version: [e.g. 1.0.0]
+- Environment: [development | production]
 
 ## Error Messages
 
 ```
 <!-- Paste any error messages here -->
+```
+
+## Request Context (if API error)
+
+- Request ID (`X-Request-Id` header):
+- Endpoint and method:
+- Approximate timestamp (UTC):
+- Sentry Event ID (if shown):
+
+## Logs (structured JSON)
+
+```json
+// Paste relevant log lines (one-line JSON per line)
 ```
 
 ## Screenshots

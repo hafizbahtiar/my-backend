@@ -183,6 +183,62 @@ ARGON2_TIME=3
 ARGON2_PARALLELISM=4
 ```
 
+### Redis Configuration
+### Image Processing
+
+#### `IMAGE_SIZES`
+**Default:** `"384,768,1280"`  
+**Purpose:** Comma-separated widths (px) to generate variants
+
+```env
+IMAGE_SIZES=384,768,1280
+```
+
+#### `IMAGE_QUALITY_WEBP`
+**Default:** `82`  
+**Purpose:** WebP output quality (1-100)
+
+#### `IMAGE_QUALITY_JPEG`
+**Default:** `82`  
+**Purpose:** JPEG fallback quality (1-100)
+
+#### `IMAGE_WEBP_ENABLED`
+**Default:** `true`  
+**Purpose:** Toggle WebP variant generation
+
+### Monitoring Configuration
+
+#### `LOG_LEVEL`
+**Default:** `info`  
+**Values:** `debug` | `info` | `warn` | `error`  
+**Purpose:** Controls verbosity of structured logs
+
+```env
+LOG_LEVEL=info
+```
+
+#### `SENTRY_DSN`
+**Default:** Empty (disabled)  
+**Purpose:** Enable error tracking integration (when implemented)
+
+```env
+SENTRY_DSN=https://public_key@oXXX.ingest.sentry.io/YYY
+```
+
+
+#### `REDIS_URL`
+**Default:** Empty (disabled)  
+**Purpose:** Enables Redis-backed rate limiting/cache  
+**Examples:**
+
+```env
+# Local development
+REDIS_URL=redis://localhost:6379
+
+# Production with password
+REDIS_URL=redis://:password@your-redis-host:6379
+```
+
 ## Environment-Specific Configurations
 
 ### Development (.env)

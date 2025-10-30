@@ -207,7 +207,7 @@ Return success
   ✅
 ```
 
-## 7. Refresh Token Flow
+## 7. Refresh Token Flow (with Rotation)
 
 ```
 User → POST /api/auth/refresh (refreshToken)
@@ -225,18 +225,20 @@ Check isActive? → No → AuthenticationError
 Check isExpired()? → Yes → AuthenticationError
   ↓ (No)
 Verify Token Hash (verifyTokenHash)
-  ↓ (Mismatch) → AuthenticationError
+  ↓ (Mismatch) → Deactivate Session → AuthenticationError (reuse protection)
   ↓ (Match)
 Get Account by userId
   ↓
 Check Account Status (active, not banned, not locked)
   ↓ (Invalid) → AuthenticationError
   ↓ (Valid)
+Rotate Refresh Token (issue new, hash & save)
+Extend Session Expiry (sliding window)
 Update Session lastLogin
   ↓
 Generate New Access Token
   ↓
-Return { accessToken }
+Return { accessToken, refreshToken }
   ✅
 ```
 

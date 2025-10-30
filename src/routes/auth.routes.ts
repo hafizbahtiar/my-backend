@@ -1,5 +1,5 @@
 import { Hono } from 'hono';
-import { register, login, refreshAccessToken, logout, verifyEmail, requestPasswordReset, confirmPasswordReset, changePassword, resendVerificationEmail, verifyEmailWithToken, deleteAccount } from '../services/auth.service';
+import { register, login, refreshAccessToken, logout, verifyEmail, requestPasswordReset, confirmPasswordReset, changePassword, resendVerificationEmail, verifyEmailWithToken, deleteAccount, getAccountStatus } from '../services/auth.service';
 import { loginWithGoogle, linkGoogleAccount, unlinkGoogleAccount } from '../services/google-oauth.service';
 import { loginRateLimit, strictRateLimit, apiRateLimit } from '../middleware/rate-limit';
 import { auth, authWithSession } from '../middleware/auth';
@@ -364,4 +364,28 @@ authRoutes.delete('/account', auth, strictRateLimit, async (c) => {
 });
 
 export default authRoutes;
+
+/**
+ * GET /api/auth/account-status
+ * Public endpoint to check if account exists and flags
+ */
+authRoutes.get('/account-status', strictRateLimit, async (c) => {
+  try {
+    const email = c.req.query('email');
+    const username = c.req.query('username');
+
+    if ((!email && !username) || (email && username)) {
+      return c.json(createErrorResponse('Provide exactly one of email or username'), 400);
+    }
+
+    const status = await getAccountStatus({ email: email || undefined, username: username || undefined });
+
+    return c.json({
+      success: true,
+      data: status,
+    });
+  } catch (error: any) {
+    return c.json(createErrorResponse(error.message), 400);
+  }
+});
 

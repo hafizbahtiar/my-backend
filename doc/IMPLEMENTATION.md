@@ -14,6 +14,7 @@ Complete implementation guide covering authentication, security, OAuth, services
 6. [Google OAuth](#google-oauth)
 7. [Services Layer](#services-layer)
 8. [Model-Utility Architecture](#model-utility-architecture)
+9. [Media & Uploads](#media--uploads)
 
 ---
 
@@ -151,6 +152,33 @@ import { loginRateLimit, strictRateLimit } from '@/middleware/rate-limit';
 app.post('/api/auth/login', loginRateLimit, loginHandler);
 app.post('/api/auth/password-reset', strictRateLimit, resetHandler);
 ```
+
+---
+
+## Account Status Check
+
+Public pre-check endpoint to determine whether an account exists and its basic flags. Useful for onboarding and login UX flows.
+
+Route: `GET /api/auth/account-status?email=... | ?username=...` (exactly one required)
+
+Response examples:
+```json
+{ "success": true, "data": { "exists": false } }
+```
+```json
+{
+  "success": true,
+  "data": {
+    "exists": true,
+    "isActive": true,
+    "isEmailVerified": false,
+    "hasPassword": true,
+    "providers": ["google"]
+  }
+}
+```
+
+Security: Public, but protected by strict rate limiting. Returns no PII beyond existence and flags.
 
 ### Response Headers
 
@@ -335,6 +363,17 @@ AccountSchema.methods.updatePassword = async function(plainPassword) {
 4. **Single Responsibility** - Each layer has clear purpose
 
 ---
+
+## Media & Uploads
+
+Uploads are stored under `/uploads` and served with security headers.
+
+- Image Processing Pipeline:
+  - Use `src/services/image.service.ts` to generate responsive variants.
+  - Default variants: 384, 768, 1280 px widths; WebP + JPEG fallback.
+  - Controlled via env: `IMAGE_SIZES`, `IMAGE_QUALITY_WEBP`, `IMAGE_QUALITY_JPEG`, `IMAGE_WEBP_ENABLED`.
+  - Integrate after saving original file; store returned variant paths in your model if needed.
+
 
 ## Summary
 

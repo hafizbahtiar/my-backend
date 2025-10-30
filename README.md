@@ -22,8 +22,10 @@ A production-ready, reusable backend template built with modern technologies.
 - **Environment Config** - Type-safe configuration management
 - **Service Layer** - 5 services (auth, user, session, device, google-oauth)
 - **API Routes** - 41 production-ready endpoints
+- **API Keys** - Create/list/revoke keys for external integrations
 - **Security Middleware** - Rate limiting, CORS, security headers
 - **Google OAuth** - Smart conditional linking for Flutter apps
+- **Uploads & Images** - Image processing (resize, WebP) pipeline via sharp
 
 ## 📁 Project Structure
 
@@ -81,6 +83,8 @@ src/
 - ✅ Ban management (temporary/permanent)
 - ✅ IP tracking and device fingerprinting
 - ✅ TTL index for automatic session cleanup
+- ✅ API key authentication for external integrations (x-api-key header)
+- ✅ Optional Sentry error tracking (set `SENTRY_DSN`)
 
 ## 📊 Project Status
 
@@ -137,6 +141,20 @@ bun run dev
 
 Server will start on `http://localhost:3000`
 
+### Optional: Enable Error Tracking (Sentry)
+
+```bash
+bun add @sentry/bun
+# set SENTRY_DSN in your .env to enable
+```
+
+### Optional: Enable Image Processing (sharp)
+
+```bash
+bun add sharp
+# configure sizes/quality in .env (see doc/environment-setup-guide.md)
+```
+
 ## 📚 Documentation
 
 Complete documentation in the [`doc/`](doc/) directory:
@@ -151,6 +169,7 @@ Complete documentation in the [`doc/`](doc/) directory:
 - [💾 Database](doc/database-structure.md) - Schema and models
 - [🔐 Environment](doc/environment-setup-guide.md) - Configuration guide
 - [🔍 Source Diagnosis](doc/SRC_DIAGNOSIS.md) - Complete code analysis
+ - API Docs (Swagger UI): visit `/docs` (spec at `/openapi.json`)
 
 ## 🧪 Testing & Utilities
 

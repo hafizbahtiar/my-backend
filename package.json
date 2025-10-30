@@ -24,13 +24,18 @@
     "generate:secret:test": "bun run scripts/generate-jwt-secret.ts --test"
   },
   "dependencies": {
+    "@hono/swagger-ui": "^0.5.2",
+    "@sentry/bun": "^10.22.0",
     "@types/nodemailer": "^7.0.3",
+    "agenda": "^5.0.0",
     "argon2": "^0.44.0",
     "google-auth-library": "^10.4.2",
     "hono": "^4.10.3",
     "jsonwebtoken": "^9.0.2",
     "mongoose": "^8.19.2",
-    "nodemailer": "^7.0.10"
+    "nodemailer": "^7.0.10",
+    "redis": "^5.9.0",
+    "sharp": "^0.34.4"
   },
   "devDependencies": {
     "@types/argon2": "^0.15.4",

@@ -152,7 +152,7 @@ export async function login(
   if (!isValidPassword) {
     // Increment login attempts
     await account.incrementLoginAttempts();
-    
+
     // Log failed login attempt
     await createAuditLog({
       userId: account.userId.toString(),
@@ -163,7 +163,7 @@ export async function login(
       errorMessage: 'Invalid password',
       metadata: { email },
     });
-    
+
     throw new AuthenticationError('Invalid credentials');
   }
 
@@ -187,26 +187,29 @@ export async function login(
     deviceId = newDevice._id;
   }
 
-  // Generate JWT refresh token
-  const refreshTokenJWT = signRefreshToken(
-    account.userId.toString(),
-    '' // Will set sessionId after creating session
-  );
-
-  // Hash refresh token for storage
-  const hashedRefreshToken = await hashTokenForDatabase(refreshTokenJWT);
-
-  // Create session
+  // Create session (placeholder token hash, will set after creating refresh token)
+  const tempPlaceholderHash = await hashTokenForDatabase(await generateSecureToken(64));
   const session = await Session.create({
     userId: account.userId,
     deviceId: deviceId,
-    refreshToken: hashedRefreshToken,
+    refreshToken: tempPlaceholderHash,
     isActive: true,
     lastLogin: new Date(),
     ipAddress: clientIP,
     userAgent: deviceInfo.userAgent || '',
     expiresAt: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000), // 7 days
   });
+
+  // Generate JWT refresh token with real session id now
+  const refreshTokenJWT = signRefreshToken(
+    account.userId.toString(),
+    (session._id as any).toString()
+  );
+
+  // Hash refresh token for storage and update session
+  const hashedRefreshToken = await hashTokenForDatabase(refreshTokenJWT);
+  session.refreshToken = hashedRefreshToken;
+  await session.save();
 
   // Generate access token with session ID
   const accessToken = signAccessToken(
@@ -279,10 +282,14 @@ export async function refreshAccessToken(refreshToken: string) {
     throw new AuthenticationError('Session has expired');
   }
 
-  // Verify token hash matches
+  // Verify token hash matches (rotation & reuse detection)
   const matchesHash = await verifyTokenHash(session.refreshToken, refreshToken);
   if (!matchesHash) {
-    throw new AuthenticationError('Token validation failed');
+    // Possible token reuse attempt: deactivate session for safety
+    await session.deactivate();
+    // Optionally, deactivate all user sessions for strict security:
+    // await Session.deactivateAllUserSessions(session.userId);
+    throw new AuthenticationError('Invalid refresh token');
   }
 
   // Get account
@@ -296,18 +303,28 @@ export async function refreshAccessToken(refreshToken: string) {
     throw new AuthenticationError('Account is not accessible');
   }
 
-  // OPTIMIZED: Update last login and generate token in parallel
-  const accessToken = await Promise.all([
-    session.updateLastLogin(),
-    Promise.resolve(signAccessToken(
-      account.userId.toString(),
-      account.email,
-      (session._id as any).toString()
-    )),
-  ]).then(([, token]) => token);
+  // Rotate refresh token: issue new refresh + update hash and expiry
+  const newRefreshToken = signRefreshToken(
+    account.userId.toString(),
+    (session._id as any).toString()
+  );
+  const newHashedRefresh = await hashTokenForDatabase(newRefreshToken);
+  session.refreshToken = newHashedRefresh;
+  session.lastLogin = new Date();
+  // extend session expiration (sliding window)
+  session.expiresAt = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000);
+  await session.save();
+
+  // Generate new access token
+  const accessToken = signAccessToken(
+    account.userId.toString(),
+    account.email,
+    (session._id as any).toString()
+  );
 
   return {
     accessToken,
+    refreshToken: newRefreshToken,
   };
 }
 
@@ -378,11 +395,11 @@ export async function requestPasswordReset(email: string) {
 
   // Generate reset token
   const resetToken = await generateSecureToken(32);
-  
+
   // Store reset token with expiration (1 hour)
   const expiresAt = new Date();
   expiresAt.setHours(expiresAt.getHours() + 1);
-  
+
   account.resetToken = resetToken;
   account.resetTokenExpiresAt = expiresAt;
   await account.save();
@@ -394,7 +411,7 @@ export async function requestPasswordReset(email: string) {
     console.error('Failed to send password reset email:', error);
     // Don't fail the request, just log the error
   }
-  
+
   return {
     success: true,
     message: 'If account exists, password reset email has been sent',
@@ -521,11 +538,11 @@ export async function resendVerificationEmail(email: string) {
 
   // Generate verification token
   const verificationToken = await generateSecureToken(32);
-  
+
   // Store token with expiration (24 hours)
   const expiresAt = new Date();
   expiresAt.setHours(expiresAt.getHours() + 24);
-  
+
   account.emailVerificationToken = verificationToken;
   account.emailVerificationTokenExpiresAt = expiresAt;
   await account.save();
@@ -536,7 +553,7 @@ export async function resendVerificationEmail(email: string) {
   } catch (error) {
     console.error('Failed to send verification email:', error);
   }
-  
+
   return {
     success: true,
     message: 'If account exists, verification email has been sent',
@@ -635,5 +652,46 @@ export async function verifyEmailWithToken(verificationToken: string) {
     success: true,
     message: 'Email verified successfully',
   };
+}
+
+/**
+ * Get account status by email or username
+ * Public usage for client pre-check flows
+ */
+export async function getAccountStatus(params: { email?: string; username?: string }) {
+  const { email, username } = params || {};
+
+  if ((!email && !username) || (email && username)) {
+    throw new ValidationError('Provide exactly one of email or username');
+  }
+
+  // Helper to build DTO from account doc
+  const toDTO = (account: any) => ({
+    exists: true,
+    isActive: !!account.isActive,
+    isEmailVerified: !!account.isEmailVerified,
+    hasPassword: !!account.password,
+    providers: Array.isArray(account.providers)
+      ? account.providers.map((p: any) => p.provider).filter(Boolean)
+      : [],
+  });
+
+  if (email) {
+    const acc = await Account.findOne({ email: email.toLowerCase() }).select(
+      'isActive isEmailVerified password providers'
+    );
+    if (!acc) return { exists: false };
+    return toDTO(acc);
+  }
+
+  // username path
+  const user = await User.findOne({ username: (username as string).toLowerCase() }).select('_id');
+  if (!user) return { exists: false };
+
+  const acc = await Account.findOne({ userId: (user as any)._id }).select(
+    'isActive isEmailVerified password providers'
+  );
+  if (!acc) return { exists: false };
+  return toDTO(acc);
 }
 

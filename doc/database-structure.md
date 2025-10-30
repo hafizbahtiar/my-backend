@@ -271,6 +271,32 @@ This document defines the database schema for a production-ready backend templat
 
 ---
 
+### 6. Cron Jobs Collection
+
+```typescript
+{
+  name: string,              // Unique per owner
+  type: string,              // Allowed job type key
+  cron: string,              // 5/6-field cron expression
+  timezone: string,          // IANA timezone, default: UTC
+  payload?: object | null,   // Type-specific params
+  enabled: boolean,          // Default: true
+  ownerId: string,           // Owner user id
+  lastRunAt?: Date | null,
+  nextRunAt?: Date | null,
+  status: 'idle' | 'running' | 'failed' | 'paused',
+  createdAt: Date,
+  updatedAt: Date
+}
+```
+
+**Indexes:**
+- Unique compound: `{ ownerId: 1, name: 1 }`
+- `{ enabled: 1, nextRunAt: 1 }`
+- `{ status: 1 }`, `{ type: 1 }`
+
+---
+
 ## Security Best Practices
 
 ### 1. Password Storage

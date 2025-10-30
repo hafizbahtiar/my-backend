@@ -1,4 +1,6 @@
 import type { Context, Next } from 'hono';
+import { randomUUID } from 'crypto';
+import { captureError } from '../config/sentry';
 import { logger } from '../utils/logger';
 
 /**
@@ -14,9 +16,14 @@ export async function requestMonitoring(c: Context, next: Next) {
   const ip = c.req.header('x-forwarded-for')?.split(',')[0].trim() || 
              c.req.header('x-real-ip') || 
              'unknown';
+  const requestId = randomUUID();
+
+  // expose request id
+  c.res.headers.set('X-Request-Id', requestId);
 
   // Log incoming request
   logger.info('Incoming Request', {
+    requestId,
     method,
     path,
     ip,
@@ -36,18 +43,20 @@ export async function requestMonitoring(c: Context, next: Next) {
     
     if (isError) {
       logger.warn('Request Completed with Error', {
+        requestId,
         method,
         path,
         status,
-        duration: `${duration}ms`,
+        durationMs: duration,
         ip,
       });
     } else {
       logger.info('Request Completed', {
+        requestId,
         method,
         path,
         status,
-        duration: `${duration}ms`,
+        durationMs: duration,
         ip,
       });
     }
@@ -58,12 +67,15 @@ export async function requestMonitoring(c: Context, next: Next) {
     const duration = Date.now() - startTime;
     
     logger.error('Request Failed', {
+      requestId,
       method,
       path,
-      duration: `${duration}ms`,
+      durationMs: duration,
       ip,
       error: error instanceof Error ? error.message : 'Unknown error',
     });
+
+    captureError(error, { requestId, method, path, ip, durationMs: duration });
 
     throw error;
   }

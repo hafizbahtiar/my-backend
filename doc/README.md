@@ -47,7 +47,7 @@
    - Security layers
 
 8. **[API Routes](./api-routes-guide.md)** ⭐
-   - All 41 endpoints documented
+  - All 50 endpoints documented
    - Request/response examples
    - Rate limiting information
    - Authentication requirements
@@ -84,8 +84,27 @@
 - PERFORMANCE_OPTIMIZATION.md (Performance benchmarks and optimizations)
 - load-tests/README.md (Load testing with k6)
 
+**Monitoring & Observability**:
+- Structured JSON logs with request context (requestId, method, path, status, durationMs, ip)
+- Response headers: `X-Request-Id`, `X-Response-Time`
+- Optional error tracking (Sentry) via `SENTRY_DSN`; captures request failures and crashes
+
+**Uploads & Images**:
+- Image processing service (resize to multiple widths, WebP + JPEG fallback)
+- Configurable sizes/quality via env (see environment guide)
+
+**Auth & Tokens**:
+- Short-lived access tokens; refresh tokens rotate on each `/api/auth/refresh`
+- Reuse detection deactivates the session
+
+**API Keys**:
+- Create/list/revoke under `/api/apikeys`
+- Send key via `x-api-key: ak_<keyId>.<secret>` (or Authorization Bearer)
+
 **Development & Deployment**:
 - CICD_GUIDE.md (CI/CD pipeline, testing, deployment)
+  - PM2 processes: API (`my-backend`), Scheduler Worker (`my-backend-worker`)
+  - API Docs: Swagger UI at `/docs`, spec at `/openapi.json`
 
 **Reference Guides** (For Details):
 - database-structure.md, api-routes-guide.md, SRC_DIAGNOSIS.md
@@ -129,7 +148,7 @@ Server runs on `http://localhost:3000` (or custom PORT from .env)
 
 ## API Endpoints
 
-### Authentication (14 endpoints)
+### Authentication (15 endpoints)
 - `POST /api/auth/register` - Register user
 - `POST /api/auth/login` - Login
 - `POST /api/auth/google` - Google OAuth (Mobile-Optimized)
@@ -144,6 +163,7 @@ Server runs on `http://localhost:3000` (or custom PORT from .env)
 - `POST /api/auth/resend-verification` - Resend verification
 - `POST /api/auth/verify-email/confirm` - Verify with token
 - `DELETE /api/auth/account` - Delete account (GDPR compliance)
+- `GET /api/auth/account-status` - Public account status check (exists, flags)
 
 ### User (6 endpoints)
 - `GET /api/user/profile` - Get profile
@@ -179,10 +199,20 @@ Server runs on `http://localhost:3000` (or custom PORT from .env)
 - `PUT /api/devices/:deviceId` - Update
 - `DELETE /api/devices/:deviceId` - Delete
 
+### Cron (8 endpoints)
+- `POST /api/cron/jobs` - Create job
+- `GET /api/cron/jobs` - List jobs
+- `GET /api/cron/jobs/:id` - Get job
+- `PUT /api/cron/jobs/:id` - Replace job
+- `PATCH /api/cron/jobs/:id` - Update job
+- `PATCH /api/cron/jobs/:id/enabled` - Enable/disable job
+- `POST /api/cron/jobs/:id/run-now` - Trigger now
+- `DELETE /api/cron/jobs/:id` - Delete job
+
 ### Health (1 endpoint)
 - `GET /health` - Health check
 
-**Total: 41 production-ready endpoints**
+**Total: 50 production-ready endpoints**
 
 ---
 
@@ -194,13 +224,14 @@ Server runs on `http://localhost:3000` (or custom PORT from .env)
 - 4-level authentication middleware
 - 5 rate limiters
 - CORS + security headers
+- Optional Redis-backed rate limiting (falls back to in-memory if REDIS_URL is unset)
 - IP and device tracking
 - Email notifications (Mobile-Optimized)
 - Audit logging for security events
 
 ### ✅ Production-Ready
-- 41 API endpoints
-- 8 services (auth, user, session, device, address, email, audit, google-oauth)
+- 50 API endpoints
+- 9 services (auth, user, session, device, address, email, audit, google-oauth, cron)
 - **Performance optimized** ⚡
   - Parallel database queries (~40-50% faster profile retrieval)
   - Response compression (40-60% smaller payloads)
@@ -230,12 +261,12 @@ Server runs on `http://localhost:3000` (or custom PORT from .env)
 ```
 src/
 ├── config/          # Database & environment
-├── models/          # Mongoose models (7)
+├── models/          # Mongoose models (8)
 ├── middleware/      # Auth, rate limit, security, monitoring
-├── services/        # Business logic (8 services)
+├── services/        # Business logic (9 services)
 ├── templates/       # Email templates (separated HTML, CSS, TS)
 │   └── emails/      # Email template functions
-├── routes/          # API routes (41 endpoints)
+├── routes/          # API routes (50 endpoints)
 ├── utils/           # Password, JWT, errors, storage, logger
 └── server.ts        # Entry point
 

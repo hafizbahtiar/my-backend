@@ -1,4 +1,5 @@
 import type { Context, Next } from 'hono';
+import { getRedis } from '../config';
 
 /**
  * Rate Limit Store Interface
@@ -98,49 +99,69 @@ export function rateLimit(options: RateLimitOptions) {
     const now = Date.now();
     const key = `rate-limit:${identifier}`;
 
-    // Get or create rate limit entry
-    let entry = rateLimitStore[key];
+    const redis = await getRedis();
 
-    // Check if entry exists and is still valid
-    if (entry && entry.resetTime > now) {
-      // Entry is still valid, check count
-      if (entry.count >= maxRequests) {
-        const retryAfter = Math.ceil((entry.resetTime - now) / 1000);
-        
-        // Return error response with headers
+    let remaining = 0;
+    let resetAt = now + windowMs;
+
+    if (redis) {
+      // Redis path: atomic INCR + PEXPIRE for TTL
+      const count = await redis.incr(key);
+      remaining = Math.max(0, maxRequests - count);
+      const ttl = await redis.ttl(key);
+      if (ttl < 0) {
+        await redis.pExpire(key, windowMs);
+        resetAt = now + windowMs;
+      } else {
+        resetAt = now + ttl * 1000;
+      }
+
+      if (count > maxRequests) {
+        const retryAfter = Math.ceil((resetAt - now) / 1000);
         return c.json({
           success: false,
-          error: {
-            message,
-            code: 'RateLimitError',
-          },
+          error: { message, code: 'RateLimitError' },
         }, 429, {
           'X-RateLimit-Limit': maxRequests.toString(),
           'X-RateLimit-Remaining': '0',
-          'X-RateLimit-Reset': entry.resetTime.toString(),
+          'X-RateLimit-Reset': resetAt.toString(),
           'Retry-After': retryAfter.toString(),
         });
       }
-
-      // Increment count
-      entry.count += 1;
     } else {
-      // Create new entry or reset expired one
-      entry = {
-        count: 1,
-        resetTime: now + windowMs,
-      };
-      rateLimitStore[key] = entry;
+      // In-memory fallback
+      let entry = rateLimitStore[key];
+      if (entry && entry.resetTime > now) {
+        if (entry.count >= maxRequests) {
+          const retryAfter = Math.ceil((entry.resetTime - now) / 1000);
+          return c.json({
+            success: false,
+            error: { message, code: 'RateLimitError' },
+          }, 429, {
+            'X-RateLimit-Limit': maxRequests.toString(),
+            'X-RateLimit-Remaining': '0',
+            'X-RateLimit-Reset': entry.resetTime.toString(),
+            'Retry-After': retryAfter.toString(),
+          });
+        }
+        entry.count += 1;
+        remaining = Math.max(0, maxRequests - entry.count);
+        resetAt = entry.resetTime;
+      } else {
+        entry = { count: 1, resetTime: now + windowMs };
+        rateLimitStore[key] = entry;
+        remaining = maxRequests - 1;
+        resetAt = entry.resetTime;
+      }
     }
 
     // Continue to next middleware first
     await next();
 
     // Set rate limit headers after processing
-    const remaining = Math.max(0, maxRequests - entry.count);
     c.res.headers.set('X-RateLimit-Limit', maxRequests.toString());
     c.res.headers.set('X-RateLimit-Remaining', remaining.toString());
-    c.res.headers.set('X-RateLimit-Reset', entry.resetTime.toString());
+    c.res.headers.set('X-RateLimit-Reset', resetAt.toString());
   };
 }
 

@@ -228,7 +228,7 @@ Authorization: Bearer <access_token>
 
 ---
 
-### Refresh Access Token
+### Refresh Access Token (with Rotation)
 ```http
 POST /api/auth/refresh
 ```
@@ -245,10 +245,15 @@ POST /api/auth/refresh
 {
   "success": true,
   "data": {
-    "accessToken": "new-access-token"
+    "accessToken": "new-access-token",
+    "refreshToken": "rotated-refresh-token"
   }
 }
 ```
+
+Notes:
+- Client MUST replace stored refresh token with the rotated token from each successful call.
+- If reuse is detected (token hash mismatch), the session is deactivated and 401 is returned.
 
 **Rate Limit:** 5 per 15 minutes
 
@@ -272,6 +277,59 @@ Authorization: Bearer <access_token>
 ```
 
 ---
+
+## API Keys (`/api/apikeys`)
+
+### Create API Key
+```http
+POST /api/apikeys
+Authorization: Bearer <access_token>
+```
+
+Create a new API key for the authenticated user. Returns the plaintext key once.
+
+Request:
+```json
+{
+  "name": "Integration Key",
+  "scopes": ["read:user"],
+  "ipAllowlist": ["203.0.113.10"],
+  "expiresAt": "2026-01-01T00:00:00.000Z"
+}
+```
+
+Response (201):
+```json
+{
+  "success": true,
+  "data": {
+    "apiKey": "ak_<keyId>.<secret>",
+    "keyId": "<keyId>",
+    "name": "Integration Key",
+    "scopes": ["read:user"],
+    "enabled": true
+  }
+}
+```
+
+### List API Keys
+```http
+GET /api/apikeys
+Authorization: Bearer <access_token>
+```
+List API keys (metadata only; secret is never returned).
+
+### Revoke API Key
+```http
+DELETE /api/apikeys/:keyId
+Authorization: Bearer <access_token>
+```
+Revoke (disable) an API key.
+
+Notes:
+- API keys are passed via `x-api-key: ak_<keyId>.<secret>` (or `Authorization: Bearer ak_<keyId>.<secret>`)
+- Only the secret part is hashed in DB; plaintext is never stored
+
 
 ### Verify Email
 ```http
@@ -362,6 +420,40 @@ Authorization: Bearer <access_token>
 **Note:** This is a soft delete. The account data remains in the database but is deactivated. This complies with GDPR "right to be forgotten" while maintaining data integrity.
 
 **Rate Limit:** 3 per 5 minutes
+
+---
+
+### Account Status (Public)
+```http
+GET /api/auth/account-status?email=user@example.com
+# or
+GET /api/auth/account-status?username=@johndoe
+```
+
+Returns whether an account exists and basic flags for client-side flows.
+
+Response (200) when found:
+```json
+{
+  "success": true,
+  "data": {
+    "exists": true,
+    "isActive": true,
+    "isEmailVerified": false,
+    "hasPassword": true,
+    "providers": ["google"]
+  }
+}
+```
+
+Response (200) when not found:
+```json
+{ "success": true, "data": { "exists": false } }
+```
+
+Notes:
+- Provide exactly one of `email` or `username`.
+- Public endpoint; protected by strict rate limit.
 
 ---
 
@@ -1028,16 +1120,69 @@ Authorization: Bearer <access_token>
 
 ---
 
+## Cron Routes (`/api/cron`)
+
+### Create Job
+```http
+POST /api/cron/jobs
+Authorization: Bearer <access_token>
+```
+
+### List Jobs
+```http
+GET /api/cron/jobs?enabled=true&type=sendEmail
+Authorization: Bearer <access_token>
+```
+
+### Get Job
+```http
+GET /api/cron/jobs/:id
+Authorization: Bearer <access_token>
+```
+
+### Replace Job
+```http
+PUT /api/cron/jobs/:id
+Authorization: Bearer <access_token>
+```
+
+### Update Job (Partial)
+```http
+PATCH /api/cron/jobs/:id
+Authorization: Bearer <access_token>
+```
+
+### Enable/Disable
+```http
+PATCH /api/cron/jobs/:id/enabled
+Authorization: Bearer <access_token>
+```
+
+### Run Now
+```http
+POST /api/cron/jobs/:id/run-now
+Authorization: Bearer <access_token>
+```
+
+### Delete Job
+```http
+DELETE /api/cron/jobs/:id
+Authorization: Bearer <access_token>
+```
+
+---
+
 ## Summary
 
-✅ **Auth Routes** - 14 endpoints (register, login, OAuth, tokens, logout, password reset, account deletion)  
+✅ **Auth Routes** - 15 endpoints (register, login, OAuth, tokens, logout, password reset, account deletion, account status)  
 ✅ **User Routes** - 6 endpoints (profile, search, username, avatar)  
 ✅ **Session Routes** - 6 endpoints (list, details, deactivate, extend)  
 ✅ **Device Routes** - 7 endpoints (get by ID, list, trust, update, delete)  
 ✅ **Address Routes** - 7 endpoints (create, list, get, update, delete, set default)  
+✅ **Cron Routes** - 8 endpoints (create, list, get, put, patch, enable, run-now, delete)  
 ✅ **Health Check** - 1 endpoint  
 
-**Total: 41 production-ready endpoints** with proper error handling and rate limiting!
+**Total: 50 production-ready endpoints** with proper error handling and rate limiting!
 
 ---
 

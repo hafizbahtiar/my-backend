@@ -240,6 +240,7 @@ vercel deploy --prod
 git pull origin main
 bun install
 bun run start
+pm2 start ecosystem.config.js   # API + Worker (my-backend, my-backend-worker)
 ```
 
 ---

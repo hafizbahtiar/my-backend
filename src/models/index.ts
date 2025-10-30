@@ -5,8 +5,10 @@ import Device from './Device';
 import Address from './Address';
 import AuditLog from './AuditLog';
 import File from './File';
+import CronJob from './CronJob';
+import ApiKey from './ApiKey';
 
-export { User, Account, Session, Device, Address, AuditLog, File };
+export { User, Account, Session, Device, Address, AuditLog, File, CronJob, ApiKey };
 
 // Export types
 export type { IUser, IUserModel } from './User';
@@ -16,4 +18,6 @@ export type { IDevice, ILocation as IDeviceLocation, IDeviceModel } from './Devi
 export type { IAddress, ICoordinates, IAddressModel } from './Address';
 export type { IAuditLog, AuditActionType, AuditStatus, IAuditLogModel } from './AuditLog';
 export type { IFile, IFileModel } from './File';
+export type { ICronJob, ICronJobModel, CronJobStatus } from './CronJob';
+export type { IApiKey, IApiKeyModel } from './ApiKey';
 

@@ -280,6 +280,16 @@ app.use('*', compress());
 ```
 **Performance Gain:** ~40-60% smaller payloads
 
+#### 7.2 Distributed Rate Limiting (Redis) ✅
+**Implemented:** Redis-backed rate limiting with in-memory fallback
+```env
+# Enable shared rate limiting across instances
+REDIS_URL=redis://localhost:6379
+```
+**Behavior:**
+- Uses Redis when `REDIS_URL` is set; otherwise falls back to in-memory store.
+- Safer for multi-instance/PM2 cluster deployments.
+
 #### 7.2 Development Tools ✅
 **Implemented:** Pretty JSON and request logging in development
 ```typescript

@@ -1,4 +1,4 @@
-这三个
+---
 name: Feature Request
 about: Suggest an idea for this project
 title: '[FEATURE] '
@@ -17,6 +17,19 @@ assignees: ''
 ## Proposed Solution
 
 <!-- How would you implement this feature? -->
+
+## API & Contracts
+
+- New/changed endpoints:
+- Request/response schema changes:
+- OpenAPI update required: [ ] Yes  [ ] No
+
+## Security & Operations
+
+- Auth/permissions impact:
+- Rate limits impact:
+- New env vars:
+- Requires worker/PM2 changes:
 
 ## Alternatives Considered
 

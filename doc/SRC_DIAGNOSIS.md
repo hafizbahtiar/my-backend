@@ -9,9 +9,9 @@
 ## Executive Summary
 
 ✅ **Overall Status:** Production-Ready  
-✅ **Total Endpoints:** 41  
-✅ **Total Models:** 7  
-✅ **Total Services:** 6  
+✅ **Total Endpoints:** 50  
+✅ **Total Models:** 8  
+✅ **Total Services:** 9  
 ✅ **Security:** Strong  
 ⚠️ **Minor Gaps:** See details below
 
@@ -19,7 +19,7 @@
 
 ## 1. ✅ COMPLETED - Core Infrastructure
 
-### Models (7 total)
+### Models (8 total)
 - ✅ **Account** - User authentication, OAuth linking, ban management
 - ✅ **User** - User profile, username, avatar
 - ✅ **Session** - Token-based sessions with TTL
@@ -27,8 +27,9 @@
 - ✅ **Address** - User addresses with default handling
 - ✅ **AuditLog** - Security event logging with TTL
 - ✅ **File** - File metadata tracking
+- ✅ **CronJob** - Dynamic job schedule metadata (cron, timezone, payload, status)
 
-### Services (6 total)
+### Services (9 total)
 - ✅ **auth.service** - Registration, login, token refresh, password reset, email verification
 - ✅ **google-oauth.service** - Google OAuth login, linking, unlinking
 - ✅ **user.service** - Profile management, search, avatar upload
@@ -37,6 +38,7 @@
 - ✅ **address.service** - Address CRUD operations
 - ✅ **audit.service** - Security event logging
 - ✅ **email.service** - Email notifications (password reset, verification, welcome)
+- ✅ **cron.service** - Dynamic cron job CRUD and validation (Mongo-backed)
 
 ### Utils (6 categories)
 - ✅ **password.ts** - Argon2id hashing, token hashing, secure token generation
@@ -45,12 +47,13 @@
 - ✅ **google-oauth.ts** - Google token verification
 - ✅ **storage.ts** - File upload utilities (naming, validation, deletion)
 - ✅ **logger.ts** - Logging utility (DEBUG, INFO, WARN, ERROR levels)
+- ✅ **image.service.ts** - Image processing pipeline (resize, WebP)
 
 ### Middleware (4 categories)
 - ✅ **auth.ts** - JWT verification (4 levels: auth, authWithAccount, authWithSession, authComplete)
 - ✅ **rate-limit.ts** - 5 rate limiters (login, API, strict, user, email)
 - ✅ **security.ts** - Security headers, CORS, request logging, size limits, IP whitelist, API keys
-- ✅ **monitoring.ts** - Request monitoring, performance metrics, health checks
+- ✅ **monitoring.ts** - Structured JSON request logs (requestId), performance metrics, health checks
 
 ---
 
@@ -218,7 +221,6 @@
 
 ⚠️ **Missing:**
 - Phone verification
-- Account status check
 
 ### Routes Analysis
 ✅ **All routes have:**
@@ -228,13 +230,20 @@
 - Documentation
 
 ✅ **Coverage:**
-- Auth: 14 endpoints ✅
+- Auth: 15 endpoints ✅
+ - API Keys: 3 endpoints ✅ (create, list, revoke)
+ - API Docs: Swagger UI available at `/docs`, spec at `/openapi.json` ✅
+### Infrastructure
+✅ **Redis-backed rate limiting:** Implemented with in-memory fallback. Set `REDIS_URL` to enable distributed limits.
+✅ **Scheduler Worker:** Agenda-based worker added (`src/jobs/scheduler.ts`), managed via PM2 (`my-backend-worker`).
+✅ **Error Tracking:** Sentry integration via `@sentry/bun` (optional, enable with `SENTRY_DSN`).
 - User: 6 endpoints ✅
 - Session: 6 endpoints ✅
 - Device: 7 endpoints ✅
 - Address: 7 endpoints ✅
 - Audit: 5 endpoints ✅
 - Health: 1 endpoint ✅
+ - Cron: 8 endpoints ✅ (create, list, get, put, patch, enable/disable, run-now, delete)
 
 ---
 

@@ -20,6 +20,23 @@ module.exports = {
             out_file: './logs/out.log',
             error_file: './logs/error.log',
             log_date_format: 'YYYY-MM-DD HH:mm:ss Z'
+        },
+        {
+            name: 'my-backend-worker',
+            cwd: '/var/www/my-backend',
+            script: 'src/jobs/scheduler.ts',
+            interpreter: '/home/hafiz/.bun/bin/bun',
+            exec_mode: 'fork',
+            instances: 1,
+            env: {
+                NODE_ENV: 'development'
+            },
+            env_production: {
+                NODE_ENV: 'production'
+            },
+            out_file: './logs/worker-out.log',
+            error_file: './logs/worker-error.log',
+            log_date_format: 'YYYY-MM-DD HH:mm:ss Z'
         }
     ]
 };
