@@ -15,6 +15,7 @@ Complete implementation guide covering authentication, security, OAuth, services
 7. [Services Layer](#services-layer)
 8. [Model-Utility Architecture](#model-utility-architecture)
 9. [Media & Uploads](#media--uploads)
+10. [Stripe Integration](#stripe-integration)
 
 ---
 
@@ -374,6 +375,66 @@ Uploads are stored under `/uploads` and served with security headers.
   - Controlled via env: `IMAGE_SIZES`, `IMAGE_QUALITY_WEBP`, `IMAGE_QUALITY_JPEG`, `IMAGE_WEBP_ENABLED`.
   - Integrate after saving original file; store returned variant paths in your model if needed.
 
+---
+
+## Stripe Integration
+
+### Configuration
+
+Stripe is configured via environment variables and initialized lazily:
+
+```typescript
+import { getStripe, getStripePublishableKey, isStripeEnabled } from '@/config';
+
+// Check if Stripe is enabled
+if (isStripeEnabled()) {
+  const stripe = getStripe();
+  // Use stripe client...
+}
+```
+
+### Environment Variables
+
+```env
+STRIPE_PUBLISHABLE_KEY=pk_test_51...
+STRIPE_SECRET_KEY=sk_test_51...
+```
+
+Both keys must be set for Stripe to be enabled. The client is initialized only when needed (lazy initialization).
+
+### Usage in Services
+
+```typescript
+import { getStripe } from '@/config';
+import { NotFoundError } from '@/utils/errors';
+
+export async function createPaymentIntent(amount: number, currency: string) {
+  const stripe = getStripe();
+  if (!stripe) {
+    throw new NotFoundError('Stripe is not configured');
+  }
+
+  const paymentIntent = await stripe.paymentIntents.create({
+    amount,
+    currency,
+  });
+
+  return paymentIntent;
+}
+```
+
+### API Version
+
+Stripe API version is automatically set to `2025-10-29.clover` (matches the installed Stripe package types).
+
+### Security Notes
+
+- **Never expose secret keys** in client-side code
+- Use test keys (`pk_test_`, `sk_test_`) for development
+- Use live keys (`pk_live_`, `sk_live_`) only in production
+- Secret keys are stored in environment variables, never in code
+
+---
 
 ## Summary
 
@@ -385,6 +446,7 @@ Uploads are stored under `/uploads` and served with security headers.
 ✅ **OAuth:** Google integration with smart linking  
 ✅ **Services:** 5 services for business logic  
 ✅ **Architecture:** Clean separation of concerns  
+✅ **Payments:** Stripe integration with lazy initialization  
 
 ---
 

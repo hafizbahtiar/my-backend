@@ -13,19 +13,20 @@ A production-ready, reusable backend template built with modern technologies.
 
 ### ✅ Fully Implemented
 
-- **Database Models** - 7 comprehensive models (User, Account, Session, Device, Address, AuditLog, File)
+- **Database Models** - 10 comprehensive models (User, Account, Session, Device, Address, AuditLog, File, CronJob, ApiKey, StripeCustomer, Payment)
 - **Password Security** - Argon2id hashing (OWASP recommended)
 - **JWT Authentication** - Access & refresh token system
 - **Authentication Middleware** - 4 security levels (auth, authWithAccount, authWithSession, authComplete)
 - **Error Handling** - Custom error classes and standardized responses
 - **Database Connection** - MongoDB connection with automatic reconnection
 - **Environment Config** - Type-safe configuration management
-- **Service Layer** - 5 services (auth, user, session, device, google-oauth)
-- **API Routes** - 41 production-ready endpoints
+- **Service Layer** - 10 services (auth, user, session, device, address, email, audit, google-oauth, cron, stripe)
+- **API Routes** - 60 production-ready endpoints
 - **API Keys** - Create/list/revoke keys for external integrations
 - **Security Middleware** - Rate limiting, CORS, security headers
 - **Google OAuth** - Smart conditional linking for Flutter apps
 - **Uploads & Images** - Image processing (resize, WebP) pipeline via sharp
+- **Stripe Payments** - Payment processing (payment intents, customers, payment methods)
 
 ## 📁 Project Structure
 
@@ -41,13 +42,15 @@ src/
 │   ├── Session.ts       Session management
 │   ├── Device.ts        Device tracking
 │   ├── Address.ts       User addresses
+│   ├── StripeCustomer.ts Stripe customer linking
+│   ├── Payment.ts       Payment tracking
 │   └── index.ts
 ├── middleware/          ✅ Complete
 │   ├── auth.ts          ✅ Authentication middleware (4 levels)
 │   ├── rate-limit.ts    ✅ Rate limiting (6 types)
 │   ├── security.ts      ✅ Security headers & CORS
 │   └── index.ts
-├── services/            ✅ Complete (8 services)
+├── services/            ✅ Complete (10 services)
 │   ├── auth.service.ts
 │   ├── user.service.ts
 │   ├── session.service.ts
@@ -55,14 +58,18 @@ src/
 │   ├── address.service.ts
 │   ├── google-oauth.service.ts
 │   ├── email.service.ts
-│   └── audit.service.ts
-├── routes/              ✅ Complete (41 endpoints)
+│   ├── audit.service.ts
+│   ├── cron.service.ts
+│   └── stripe.service.ts
+├── routes/              ✅ Complete (60 endpoints)
 │   ├── auth.routes.ts
 │   ├── user.routes.ts
 │   ├── session.routes.ts
 │   ├── device.routes.ts
 │   ├── address.routes.ts
-│   └── audit.routes.ts
+│   ├── audit.routes.ts
+│   ├── cron.routes.ts
+│   └── stripe.routes.ts
 ├── utils/               ✅ Complete (6 utilities)
 │   ├── password.ts      ✅ Argon2id hashing
 │   ├── jwt.ts           ✅ JWT token management
@@ -94,7 +101,7 @@ All critical infrastructure complete with performance optimizations. See [`doc/S
 **Key Achievements:**
 - ✅ All security vulnerabilities resolved  
 - ✅ CORS & security headers (Hono built-in)  
-- ✅ 41 API endpoints functional  
+- ✅ 60 API endpoints functional  
 - ✅ Complete authentication system  
 - ✅ Rate limiting, OAuth, session management  
 - ✅ **Performance optimized** (parallel queries, compression, async operations)
@@ -165,7 +172,7 @@ Complete documentation in the [`doc/`](doc/) directory:
 - [📱 Mobile Optimization](doc/MOBILE_OPTIMIZATION.md) - Mobile-first backend
 - [📱 Mobile Flows](doc/MOBILE_FLOWS.md) - Mobile password reset & verification
 - [🔐 Auth Flows](doc/AUTH_FLOW.md) - Authentication flow diagrams
-- [🌐 API Routes](doc/api-routes-guide.md) - All 41 endpoints
+- [🌐 API Routes](doc/api-routes-guide.md) - All 60 endpoints
 - [💾 Database](doc/database-structure.md) - Schema and models
 - [🔐 Environment](doc/environment-setup-guide.md) - Configuration guide
 - [🔍 Source Diagnosis](doc/SRC_DIAGNOSIS.md) - Complete code analysis
@@ -200,7 +207,7 @@ See [load-tests/README.md](load-tests/README.md) for complete load testing guide
 
 ### Models with Methods
 
-- **7 comprehensive models** (User, Account, Session, Device, Address, AuditLog, File)
+- **10 comprehensive models** (User, Account, Session, Device, Address, AuditLog, File, CronJob, ApiKey, StripeCustomer, Payment)
 - Rate limiting and ban management
 - Session tracking with automatic expiration
 - Device trust management
@@ -245,16 +252,18 @@ See [load-tests/README.md](load-tests/README.md) for complete load testing guide
 
 ## ✨ What's Included
 
-### 41 Production-Ready API Endpoints
-- **Auth (14):** Register, Login, Google OAuth, Link/Unlink, Refresh, Logout, Verify Email, Password Reset, Change Password, Account Deletion
+### 60 Production-Ready API Endpoints
+- **Auth (15):** Register, Login, Google OAuth, Link/Unlink, Refresh, Logout, Verify Email, Password Reset, Change Password, Account Deletion, Account Status
 - **User (6):** Profile, Update, Search, Get by Username, Check Availability, Upload Avatar
 - **Sessions (6):** List, Details, Deactivate, Logout All, By Device, Extend
 - **Devices (7):** List, Get by ID, Trusted, Mark Trusted/Untrusted, Update, Delete
 - **Addresses (7):** Create, List, Get Default, Get by ID, Update, Delete, Set Default
+- **Cron (8):** Create, List, Get, Replace, Update, Enable/Disable, Run Now, Delete
+- **Stripe (10):** Payment Intents (create, get, confirm, cancel), Customers (create, get), Payment Methods (list, attach, detach), Setup Intents
 - **Audit (5):** Get User Logs, Get by Action, Get by IP, Get by Date Range, Get Failed Logins
 - **Health (1):** Health Check with Monitoring
 
-### 8 Services
+### 10 Services
 - Auth Service - Login, register, password management
 - Google OAuth Service - Smart conditional linking
 - User Service - Profile management, avatar upload
@@ -263,6 +272,8 @@ See [load-tests/README.md](load-tests/README.md) for complete load testing guide
 - Address Service - Address CRUD operations
 - Email Service - Email notifications with templates
 - Audit Service - Security event logging
+- Cron Service - Dynamic cron job management
+- Stripe Service - Payment processing (intents, customers, payment methods)
 
 ### Security Features
 - Argon2id password hashing (64MB, 3 iterations)

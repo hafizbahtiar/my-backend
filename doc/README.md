@@ -101,6 +101,11 @@
 - Create/list/revoke under `/api/apikeys`
 - Send key via `x-api-key: ak_<keyId>.<secret>` (or Authorization Bearer)
 
+**Payments (Stripe)**:
+- Stripe integration via `src/config/stripe.ts`
+- Lazy initialization; enabled when both `STRIPE_PUBLISHABLE_KEY` and `STRIPE_SECRET_KEY` are set
+- API version: `2025-10-29.clover` (automatically configured)
+
 **Development & Deployment**:
 - CICD_GUIDE.md (CI/CD pipeline, testing, deployment)
   - PM2 processes: API (`my-backend`), Scheduler Worker (`my-backend-worker`)
@@ -209,10 +214,22 @@ Server runs on `http://localhost:3000` (or custom PORT from .env)
 - `POST /api/cron/jobs/:id/run-now` - Trigger now
 - `DELETE /api/cron/jobs/:id` - Delete job
 
+### Stripe (10 endpoints)
+- `POST /api/stripe/payment-intents` - Create payment intent
+- `GET /api/stripe/payment-intents/:id` - Get payment intent
+- `POST /api/stripe/payment-intents/:id/confirm` - Confirm payment
+- `POST /api/stripe/payment-intents/:id/cancel` - Cancel payment
+- `POST /api/stripe/customers` - Create customer
+- `GET /api/stripe/customers/:id` - Get customer
+- `GET /api/stripe/customers/:id/payment-methods` - List payment methods
+- `POST /api/stripe/payment-methods/:id/attach` - Attach payment method
+- `POST /api/stripe/payment-methods/:id/detach` - Detach payment method
+- `POST /api/stripe/setup-intents` - Create setup intent
+
 ### Health (1 endpoint)
 - `GET /health` - Health check
 
-**Total: 50 production-ready endpoints**
+**Total: 60 production-ready endpoints**
 
 ---
 
@@ -230,8 +247,8 @@ Server runs on `http://localhost:3000` (or custom PORT from .env)
 - Audit logging for security events
 
 ### ✅ Production-Ready
-- 50 API endpoints
-- 9 services (auth, user, session, device, address, email, audit, google-oauth, cron)
+- 60 API endpoints
+- 10 services (auth, user, session, device, address, email, audit, google-oauth, cron, stripe)
 - **Performance optimized** ⚡
   - Parallel database queries (~40-50% faster profile retrieval)
   - Response compression (40-60% smaller payloads)

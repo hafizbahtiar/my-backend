@@ -7,8 +7,10 @@ import AuditLog from './AuditLog';
 import File from './File';
 import CronJob from './CronJob';
 import ApiKey from './ApiKey';
+import StripeCustomer from './StripeCustomer';
+import Payment from './Payment';
 
-export { User, Account, Session, Device, Address, AuditLog, File, CronJob, ApiKey };
+export { User, Account, Session, Device, Address, AuditLog, File, CronJob, ApiKey, StripeCustomer, Payment };
 
 // Export types
 export type { IUser, IUserModel } from './User';
@@ -20,4 +22,6 @@ export type { IAuditLog, AuditActionType, AuditStatus, IAuditLogModel } from './
 export type { IFile, IFileModel } from './File';
 export type { ICronJob, ICronJobModel, CronJobStatus } from './CronJob';
 export type { IApiKey, IApiKeyModel } from './ApiKey';
+export type { IStripeCustomer, IStripeCustomerModel } from './StripeCustomer';
+export type { IPayment, IPaymentModel, PaymentStatus } from './Payment';
 

@@ -40,3 +40,4 @@
 - API key auth for external integrations (create/list/revoke, x-api-key header)
 - Error tracking integration (Sentry) via `@sentry/bun` and `SENTRY_DSN`
 - Image processing pipeline (resize, WebP) via sharp; env-configurable
+- Stripe integration: config, service, routes (10 endpoints), models (StripeCustomer, Payment)

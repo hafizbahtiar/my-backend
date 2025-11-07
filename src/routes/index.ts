@@ -8,6 +8,7 @@ import auditRoutes from './audit.routes';
 import cronRoutes from './cron.routes';
 import docsRoutes from './docs.routes';
 import apiKeyRoutes from './apikey.routes';
+import stripeRoutes from './stripe.routes';
 
 const routes = new Hono();
 
@@ -20,6 +21,7 @@ routes.route('/api/addresses', addressRoutes);
 routes.route('/api/audit', auditRoutes);
 routes.route('/api/cron', cronRoutes);
 routes.route('/api/apikeys', apiKeyRoutes);
+routes.route('/api/stripe', stripeRoutes);
 routes.route('/', docsRoutes);
 
 // Health check endpoint is now handled by monitoring middleware in server.ts

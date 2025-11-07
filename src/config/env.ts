@@ -120,6 +120,15 @@ export const redisConfig = {
   enabled: !!process.env.REDIS_URL,
 };
 
+/**
+ * Stripe configuration (optional)
+ */
+export const stripeConfig = {
+  publishableKey: process.env.STRIPE_PUBLISHABLE_KEY || '',
+  secretKey: process.env.STRIPE_SECRET_KEY || '',
+  enabled: !!(process.env.STRIPE_PUBLISHABLE_KEY && process.env.STRIPE_SECRET_KEY),
+};
+
 
 /**
  * Log all configuration (hide sensitive values)
@@ -218,6 +227,12 @@ if (serverConfig.isDevelopment) {
     {
       label: 'Redis',
       value: redisConfig.enabled ? `🟢 Enabled` : '🔴 Not configured',
+    },
+    {
+      label: 'Stripe',
+      value: stripeConfig.enabled
+        ? `🟢 Enabled (${stripeConfig.publishableKey.substring(0, 12)}...)`
+        : '🔴 Not configured',
     },
   ];
 

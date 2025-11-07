@@ -239,6 +239,43 @@ REDIS_URL=redis://localhost:6379
 REDIS_URL=redis://:password@your-redis-host:6379
 ```
 
+### Payment Configuration (Stripe)
+
+#### `STRIPE_PUBLISHABLE_KEY`
+**Default:** Empty (disabled)  
+**Purpose:** Stripe publishable key for client-side integration  
+**Get from:** [Stripe Dashboard](https://dashboard.stripe.com/apikeys)
+
+```env
+STRIPE_PUBLISHABLE_KEY=pk_test_51...
+```
+
+**Setup Steps:**
+1. Go to [Stripe Dashboard](https://dashboard.stripe.com)
+2. Navigate to Developers → API keys
+3. Copy "Publishable key" (starts with `pk_test_` for test mode or `pk_live_` for live mode)
+
+#### `STRIPE_SECRET_KEY`
+**Default:** Empty (disabled)  
+**Purpose:** Stripe secret key for server-side operations  
+**Security:** Must be kept secret! Never expose in client-side code.
+
+```env
+STRIPE_SECRET_KEY=sk_test_51...
+```
+
+**Setup Steps:**
+1. Go to [Stripe Dashboard](https://dashboard.stripe.com)
+2. Navigate to Developers → API keys
+3. Copy "Secret key" (starts with `sk_test_` for test mode or `sk_live_` for live mode)
+4. **⚠️ IMPORTANT:** Use test keys for development, live keys only in production
+
+**Notes:**
+- Both keys must be set for Stripe to be enabled
+- Test keys (`pk_test_`, `sk_test_`) are safe to use in development
+- Live keys (`pk_live_`, `sk_live_`) should only be used in production
+- Stripe API version: `2025-10-29.clover` (automatically configured)
+
 ## Environment-Specific Configurations
 
 ### Development (.env)
@@ -462,14 +499,18 @@ CORS_ORIGIN=*
 ARGON2_MEMORY=65536
 ARGON2_TIME=3
 ARGON2_PARALLELISM=4
+
+# Payments (Stripe) - Optional
+STRIPE_PUBLISHABLE_KEY=pk_test_51...
+STRIPE_SECRET_KEY=sk_test_51...
 ```
 
 ## Summary
 
 ✅ **Required:** `MONGODB_URI`, `JWT_SECRET`  
 ✅ **Recommended:** Set `NODE_ENV` and `CORS_ORIGIN` for production  
-✅ **Optional:** OAuth, custom token expiries, Argon2 tuning  
-✅ **Security:** Generate strong secrets, never commit `.env`  
+✅ **Optional:** OAuth, custom token expiries, Argon2 tuning, Stripe, Redis, Sentry  
+✅ **Security:** Generate strong secrets, never commit `.env`, use test keys for development  
 
 ---
 

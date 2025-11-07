@@ -7,4 +7,5 @@ export * from './email.service';
 export * from './address.service';
 export * from './audit.service';
 export * from './cron.service';
+export * from './stripe.service';
 

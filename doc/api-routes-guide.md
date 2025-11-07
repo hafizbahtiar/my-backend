@@ -1172,6 +1172,283 @@ Authorization: Bearer <access_token>
 
 ---
 
+## Stripe Routes (`/api/stripe`)
+
+### Create Payment Intent
+```http
+POST /api/stripe/payment-intents
+Authorization: Bearer <access_token>
+```
+
+**Request:**
+```json
+{
+  "amount": 29.99,
+  "currency": "usd",
+  "metadata": {
+    "orderId": "order_123"
+  },
+  "customerId": "cus_xxx"
+}
+```
+
+**Response (201):**
+```json
+{
+  "success": true,
+  "data": {
+    "id": "pi_xxx",
+    "clientSecret": "pi_xxx_secret_xxx",
+    "amount": 29.99,
+    "currency": "usd",
+    "status": "requires_payment_method"
+  }
+}
+```
+
+**Rate Limit:** 100 per 15 minutes
+
+---
+
+### Get Payment Intent
+```http
+GET /api/stripe/payment-intents/:id
+Authorization: Bearer <access_token>
+```
+
+**Response (200):**
+```json
+{
+  "success": true,
+  "data": {
+    "id": "pi_xxx",
+    "amount": 29.99,
+    "currency": "usd",
+    "status": "succeeded",
+    "clientSecret": "pi_xxx_secret_xxx",
+    "metadata": {},
+    "created": 1234567890
+  }
+}
+```
+
+---
+
+### Confirm Payment Intent
+```http
+POST /api/stripe/payment-intents/:id/confirm
+Authorization: Bearer <access_token>
+```
+
+**Request:**
+```json
+{
+  "paymentMethodId": "pm_xxx",
+  "returnUrl": "https://example.com/return"
+}
+```
+
+**Response (200):**
+```json
+{
+  "success": true,
+  "data": {
+    "id": "pi_xxx",
+    "status": "succeeded",
+    "amount": 29.99,
+    "currency": "usd"
+  }
+}
+```
+
+**Rate Limit:** 3 per 5 minutes
+
+---
+
+### Cancel Payment Intent
+```http
+POST /api/stripe/payment-intents/:id/cancel
+Authorization: Bearer <access_token>
+```
+
+**Response (200):**
+```json
+{
+  "success": true,
+  "data": {
+    "id": "pi_xxx",
+    "status": "canceled"
+  }
+}
+```
+
+**Rate Limit:** 3 per 5 minutes
+
+---
+
+### Create Customer
+```http
+POST /api/stripe/customers
+Authorization: Bearer <access_token>
+```
+
+**Request:**
+```json
+{
+  "email": "customer@example.com",
+  "name": "John Doe",
+  "metadata": {
+    "userId": "user_123"
+  }
+}
+```
+
+**Response (201):**
+```json
+{
+  "success": true,
+  "data": {
+    "id": "cus_xxx",
+    "email": "customer@example.com",
+    "name": "John Doe",
+    "created": 1234567890
+  }
+}
+```
+
+---
+
+### Get Customer
+```http
+GET /api/stripe/customers/:id
+Authorization: Bearer <access_token>
+```
+
+**Response (200):**
+```json
+{
+  "success": true,
+  "data": {
+    "id": "cus_xxx",
+    "email": "customer@example.com",
+    "name": "John Doe",
+    "created": 1234567890,
+    "metadata": {}
+  }
+}
+```
+
+---
+
+### List Payment Methods
+```http
+GET /api/stripe/customers/:id/payment-methods?type=card
+Authorization: Bearer <access_token>
+```
+
+**Response (200):**
+```json
+{
+  "success": true,
+  "data": [
+    {
+      "id": "pm_xxx",
+      "type": "card",
+      "card": {
+        "brand": "visa",
+        "last4": "4242",
+        "expMonth": 12,
+        "expYear": 2025
+      },
+      "created": 1234567890
+    }
+  ]
+}
+```
+
+---
+
+### Attach Payment Method
+```http
+POST /api/stripe/payment-methods/:id/attach
+Authorization: Bearer <access_token>
+```
+
+**Request:**
+```json
+{
+  "customerId": "cus_xxx"
+}
+```
+
+**Response (200):**
+```json
+{
+  "success": true,
+  "data": {
+    "id": "pm_xxx",
+    "type": "card",
+    "customer": "cus_xxx"
+  }
+}
+```
+
+**Rate Limit:** 3 per 5 minutes
+
+---
+
+### Detach Payment Method
+```http
+POST /api/stripe/payment-methods/:id/detach
+Authorization: Bearer <access_token>
+```
+
+**Response (200):**
+```json
+{
+  "success": true,
+  "data": {
+    "id": "pm_xxx",
+    "detached": true
+  }
+}
+```
+
+**Rate Limit:** 3 per 5 minutes
+
+---
+
+### Create Setup Intent
+```http
+POST /api/stripe/setup-intents
+Authorization: Bearer <access_token>
+```
+
+**Request:**
+```json
+{
+  "customerId": "cus_xxx",
+  "metadata": {
+    "userId": "user_123"
+  }
+}
+```
+
+**Response (201):**
+```json
+{
+  "success": true,
+  "data": {
+    "id": "seti_xxx",
+    "clientSecret": "seti_xxx_secret_xxx",
+    "status": "requires_payment_method",
+    "customer": "cus_xxx"
+  }
+}
+```
+
+---
+
 ## Summary
 
 ✅ **Auth Routes** - 15 endpoints (register, login, OAuth, tokens, logout, password reset, account deletion, account status)  
@@ -1180,9 +1457,10 @@ Authorization: Bearer <access_token>
 ✅ **Device Routes** - 7 endpoints (get by ID, list, trust, update, delete)  
 ✅ **Address Routes** - 7 endpoints (create, list, get, update, delete, set default)  
 ✅ **Cron Routes** - 8 endpoints (create, list, get, put, patch, enable, run-now, delete)  
+✅ **Stripe Routes** - 10 endpoints (payment intents, customers, payment methods, setup intents)  
 ✅ **Health Check** - 1 endpoint  
 
-**Total: 50 production-ready endpoints** with proper error handling and rate limiting!
+**Total: 60 production-ready endpoints** with proper error handling and rate limiting!
 
 ---
 
